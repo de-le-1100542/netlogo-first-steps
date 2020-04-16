@@ -4,7 +4,7 @@
 
 to setup
   clear-all
-  create-turtles 3
+  create-turtles 10
   ask turtles
     [
     set size 3
@@ -30,6 +30,7 @@ to go_once
   [
     fd 1
   ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
