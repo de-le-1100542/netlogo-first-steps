@@ -1,0 +1,26 @@
+; Autor: EH
+; Date: 2020-04-9
+; first try
+
+to setup
+  clear-all
+  create-turtles 10
+  ask turtles
+    [ set size 3
+      set shape "bug"
+      set color white
+    ]
+  ; Background starts green
+  ask patches
+    [ set pcolor green
+    ]
+
+
+end
+
+to go
+  ask turtles
+    [
+      forward 1
+    ]
+end
