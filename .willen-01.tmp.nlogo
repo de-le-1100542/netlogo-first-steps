@@ -11,7 +11,10 @@ to setup
     set shape "sheep"
     set color white
     ]
-
+  ask patches
+    [
+    set pcolor green
+    ]
 end
 
 
@@ -21,6 +24,12 @@ to go
   forward 1
   ]
 end
+
+to go_once
+  ask turtles
+  [
+    fd 1
+  ]
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -74,6 +83,23 @@ BUTTON
 go
 go
 T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+115
+104
+190
+137
+go once
+go_once
+NIL
 1
 T
 OBSERVER
