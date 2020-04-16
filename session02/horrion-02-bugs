@@ -1,0 +1,33 @@
+; Autor: EH
+; Date: 2020-04-16
+; second try
+
+to setup
+  clear-all
+  create-turtles 10
+  ask turtles
+    [ set size 3
+      set shape "bug"
+      set color black
+      setxy random-xcor random-ycor
+      ;setxy random 16 random 16, nur in einem Quadrat
+      ;setxy -8 random 8, beschränkt eine Zufallszahl
+      ;setxy -8 random-ycor, gesetzte x-Achse und zufällige y-Achse
+      ;setxy random-xcor random ycor
+    ]
+  ; Background starts green
+  ask patches
+    [ set pcolor green
+    ]
+
+
+end
+
+to go
+  ask turtles
+    [
+      ;we want the turtles to turn up to every fifth "tick"
+      right random 360
+      forward pace
+    ]
+end
