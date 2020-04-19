@@ -1,35 +1,32 @@
-; Autor LW
-; Date 2020-04-09
-; V1.0
+; Autor: PM
+; Date: 2020-04-16
+; first try, 2. Kurs
 
 to setup
   clear-all
-  create-turtles 3
+  create-turtles 10
   ask turtles
-    [
-    set size 3
-    set shape "sheep"
-    set color white
-    ]
+        [ set size 3
+          set shape "bug"
+          set color white
+          setxy random-xcor random-ycor
+         ]
+  ; Background starts green
   ask patches
-    [
-    set pcolor green
-    ]
+      [ set pcolor green
+      ]
 end
-
 
 to go
   ask turtles
-  [
-  forward 1
-  ]
+      [
+        right random 90 - 45
+        forward pace
+      ]
+  ask patches
+     [ set pcolor blue
+     ]
 end
-
-to go_once
-  ask turtles
-  [
-    fd 1
-  ]
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -59,10 +56,10 @@ ticks
 30.0
 
 BUTTON
-21
-27
-84
-60
+41
+10
+114
+43
 setup
 setup
 NIL
@@ -76,10 +73,10 @@ NIL
 1
 
 BUTTON
-115
-30
-178
-63
+127
+10
+200
+43
 go
 go
 T
@@ -93,12 +90,12 @@ NIL
 1
 
 BUTTON
-115
-104
-190
-137
+127
+58
+200
+93
 go once
-go_once
+go 
 NIL
 1
 T
@@ -108,6 +105,21 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+28
+131
+200
+164
+pace
+pace
+0.1
+2
+0.2
+0.1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?

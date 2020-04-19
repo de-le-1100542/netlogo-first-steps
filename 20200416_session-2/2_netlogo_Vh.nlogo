@@ -1,44 +1,60 @@
-; Autor: JB
-; Date: 2020-04-09
+; Autor: VH
+; Date: 2020-04-9
 ; first try
+; formal setup und go definieren, damit nicht mehr rot ist.
+; clear all: damit immer neu
+; rechtslink auf wörter um befehle nachzugcuken
+; ask immer wenn man etwas mit etwas machen will! BOTSCHAFT
+; botschaften müssen sich an jemadnen setzten. botschaften können empfangen
+; werden von turtles
+; man kann auch mit clear all botschaften an die oberfläche geben
+; immer auf adressaten achten
+; jeder patch wird auch als agenten bearbeitet
+; wieso bug in "" , aber farben und zahlen nicht.
+; settings: world vertical und horizontal schließen, damit grenzen
+; turtle ist agent oder akteur
+; damit sie zufällig sarten: setxy random xcor random ycor
+; oder an bestimmter stelle: setxy 8 8
 
 to setup
   clear-all
   create-turtles 10
   ask turtles
-     [set size 3
-      set shape "bug"
-      set color black
-      setxy random 16 random 16 ;Koordinaten sind zufällig, aber in rechtem oberen Koordinaten
-      ;setxy random-xcor random-ycor
-      ]
-  ; Background starts green
+    [set size 3
+     set shape "bug"
+     set color white
+     setxy random-xcor random-ycor
+    ]
+  ; Background (patches) starts green (pcolor)
   ask patches
-    [set pcolor green
-  ]
-
+   [set pcolor green
+   ]
 end
-
-to go
-  ask turtles
-    [; we want the turtles to turn up to every fifth "tick" - not very tick
-      right random 360
-      forward pace
-  ]
-end
-
 
 to go-once
   ask turtles
-  [
-    forward 1
+   [forward pace
+   ]
+  ; forward not one, but pace, so that slider makes movement
+  ;ask patches
+ ; [ set pcolor red
+ ; ]
+end
+
+to go
+  ask turtles [
+    right random 90 - 45
+    forward pace
   ]
 end
+
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+221
 10
-647
+658
 448
 -1
 -1
@@ -63,12 +79,12 @@ ticks
 30.0
 
 BUTTON
+20
 15
-21
-79
-54
+84
+48
 NIL
-Setup
+setup
 NIL
 1
 T
@@ -80,29 +96,12 @@ NIL
 1
 
 BUTTON
-105
-22
-180
-55
+117
+18
+196
+51
 NIL
-go 
-T
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-105
-67
-182
-100
-NIL
-go-once
+go-once\n\n
 NIL
 1
 T
@@ -114,19 +113,36 @@ NIL
 1
 
 SLIDER
-14
-118
-186
-151
+18
+117
+190
+150
 pace
 pace
 0
-2
-0.4
-0.1
+10
+3.0
+1
 1
 NIL
 HORIZONTAL
+
+BUTTON
+123
+69
+186
+102
+NIL
+go
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
