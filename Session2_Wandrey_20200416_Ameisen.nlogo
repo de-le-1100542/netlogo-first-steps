@@ -27,15 +27,13 @@ tick
  ask turtles
   [
   ;turtles turn every fifth ticks anf forward "pace" steps
-  print ticks
-  if ticks = 5 [right random 360]
+  if ticks / 5 = int (ticks / 5) [right random 90]
   forward pace
   ]
  ask patches
    [
    set pcolor pink
    ]
-if ticks = 5 [reset-ticks]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
