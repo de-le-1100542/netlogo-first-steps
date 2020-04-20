@@ -31,7 +31,7 @@ to go
     [
     forward 1
   ]
-  ; will move forward 1 patch ? to change the
+  ; will move forward 1 patch/tick
   ask patches
      [set pcolor red
   ]
