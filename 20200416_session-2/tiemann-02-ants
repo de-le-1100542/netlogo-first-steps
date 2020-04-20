@@ -1,39 +1,45 @@
-; Autor: NW
-; Date 2020-04-16
-; second code
-
-
+; Autor: RT
+; Date: 2020-04-20
+; Name: second try
 
 to setup
- clear-all
- create-turtles 10
- reset-ticks
- ask turtles
-   [
-   set size 5
-   set shape "bug"
-   set color turquoise
-   setxy random-xcor random-ycor
-   ]
- ;Background starts green
- ask patches
-  [
-  set pcolor orange
+  ; to defines adress
+  clear-all
+  ; clears action before reset
+  ; directions are sent to the black surface
+  create-turtles 10
+  ask turtles
+  ; adress the turtles for size etc
+    [set size 3
+     set shape "bug"
+     set color 24
+     ;setxy random-xcor random-ycor
+     ;setxy random 16 random 16
+     setxy -8 random 8 ;beschränkt start ycor von 0-8
+     ;setxy -8 random-ycor ; x set und y zufällig
+     ]
+  ; 5 times bigger
+  ; brackets direct all sets to turtles
+  ; use american english
+  ask patches
+     [ set pcolor 44
   ]
+  ; adress patches w/ pcolor
 end
 
 to go
-tick
- ask turtles
-  [
-  ;turtles turn every fifth ticks anf forward "pace" steps
-  if ticks / 5 = int (ticks / 5) [right random 90]
-  forward pace
+    ask turtles
+  ; need to adress otherwise fehler
+
+    [
+    forward pace
+    right random 360
   ]
- ask patches
-   [
-   set pcolor pink
-   ]
+  ; will move forward 1 patch/go
+  ask patches
+     [set pcolor red + 2
+  ]
+  ; 1 by 1
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -64,12 +70,12 @@ ticks
 30.0
 
 BUTTON
-33
-41
-96
-74
+7
+14
+73
+47
 NIL
-setup
+Setup
 NIL
 1
 T
@@ -81,10 +87,27 @@ NIL
 1
 
 BUTTON
-134
-48
-209
-81
+137
+39
+218
+72
+go 
+go
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+71
+139
+152
+172
 go once
 go
 NIL
@@ -97,34 +120,17 @@ NIL
 NIL
 1
 
-BUTTON
-43
-126
-106
-159
-NIL
-go
-T
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
 SLIDER
-31
-216
-203
-249
+89
+250
+261
+283
 pace
 pace
 0
-10
+4
 1.0
-1
+0.5
 1
 NIL
 HORIZONTAL
