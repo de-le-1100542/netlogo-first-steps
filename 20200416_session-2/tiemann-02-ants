@@ -8,7 +8,6 @@ to setup
   ; clears action before reset
   ; directions are sent to the black surface
   create-turtles 10
-  ; creates triangle
   ask turtles
   ; adress the turtles for size etc
     [set size 3
