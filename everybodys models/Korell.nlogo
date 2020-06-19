@@ -1,5 +1,5 @@
 ; Version   Korallenriff Modell Zwischenstand - 2.Prüfungsleistung              |
-; Date      2020-06-01                                                          |
+; Date      2020-06-18                                                          |
 ; Authors   Leonard Willen & Marvin Lauenburg                                   |
 ; Copyright Marvin Lauenburg, Leonard Willen                                    |
 ; Licence   CC-by-SA 4.0                                                        |
@@ -18,12 +18,18 @@ globals[
   start-energy
   coral-colors
   max-corals
-  number-corals
-  number-patches
-  coral-stress
-  structural-complexity
 
-  distance-between-corals                                                       ;Important for grid- or clumped-arrangement
+  num-start-corals
+  number-patches
+
+  pH-value                                                                      ;pH-value of water - for calculating stress towards agents
+  temperature                                                                   ;water temperature - for calculating stress towards agents
+  stress
+
+  structural-complexity                                                         ;A number that describes the complexity of the whole reef, calculated on basis of:
+                                                                                ;  difference of coral-properties and depth of corals close to each other
+
+  distance-between-corals                                                       ;Variables Important for grid- or clumped-arrangement
   grid-patches
   clumped-patches
   depth-dataset
@@ -34,6 +40,7 @@ globals[
 patches-own [
   depth
   radiation
+  patch-complexity
 ]
 
 
@@ -56,19 +63,20 @@ to setup
 
 ; ------------------------ Initialization of variables -------------------------
   set max-corals 3                                                              ;maximal number of corals that can exist on one patch
-  set start-energy 20
+  set start-energy 20                                                           ;Start energy every turtle starts with
 
   set number-patches world-width * world-height
-  set number-corals (world-width * world-height * (density / 100))              ;number of corals initially planted according to distance-slider
+  set num-start-corals (world-width * world-height * (density / 100))           ;number of corals that gets initially planted
+  set distance-between-corals (floor sqrt (number-patches / num-start-corals))  ;distance between planted corals in grid- & clumped-arrangement
 
-  set distance-between-corals (floor sqrt (number-patches / number-corals))     ;for grid arrangement
-  set grid-patches patches with [
+
+  set grid-patches patches with [                                               ;Calculate all the patches for grid-arrangement, where corals get planted
     pxcor mod distance-between-corals = 0
     and pycor mod distance-between-corals = 0
   ]
 
-  set clumped-patches patches with [                                            ;for clumped arrangement
-    (pxcor mod (distance-between-corals * 2)) = 0 and
+  set clumped-patches patches with [                                            ;Calculate all the patches for clumped-arrangement, where corals get planted
+    (pxcor mod (distance-between-corals * 2)) = 0 and                           ;  initial calculated distance gets dubled
     (pycor mod (distance-between-corals * 2) = 0)
   ]
 
@@ -84,7 +92,7 @@ to setup
   ]
 
   if (planted-species = "both") [
-    set number-corals number-corals / 2
+    set num-start-corals num-start-corals / 2
     rapid-corals-setup
     capacity-corals-setup
   ]
@@ -98,25 +106,17 @@ end
 
 
 to patches-setup
-
-  let path ""
-  ifelse user = "Marvin" [
-    set path "/Users/marvinlauenburg/Documents/Leuphana/6. Semester/Ökosystemmodellierung/"
-  ]
-  [
-    set path "C:/Users/leowi/OneDrive/Dokumente/GitHub/coralgrowth_abm/"
+                                                                                ;This model can run on three different seabeds, which differ in depth of patches
+  if (depth-profile = "Profile 1") [                                            ;! The first profile ... describe first profile
+    set depth-dataset gis:load-dataset "DS--1.asc"
   ]
 
-  if (depth-profile = "Profile 1") [
-    set depth-dataset gis:load-dataset (word path "DS--1.asc")                  ;defines the depth-variable according to the gis-file
+   if (depth-profile = "Profile 2") [                                           ;! The second profile ...
+     set depth-dataset gis:load-dataset "DS--2.asc"
   ]
 
-   if (depth-profile = "Profile 2") [
-     set depth-dataset gis:load-dataset (word path "DS--2.asc")
-  ]
-
-   if (depth-profile = "Profile 3") [
-     set depth-dataset gis:load-dataset (word path "DS--3.asc")
+   if (depth-profile = "Profile 3") [                                           ;! The third profile ...
+     set depth-dataset gis:load-dataset "DS--3.asc"
   ]
 
   gis:set-world-envelope (gis:envelope-of depth-dataset)                        ;sets the coordinate system according to the gis-file via its envelope
@@ -133,7 +133,7 @@ end
 
 to rapid-corals-setup
 
-  create-rapid-corals number-corals [
+  create-rapid-corals num-start-corals [
     if arrangement = "random" [
       set xcor random-xcor set ycor random-ycor
     ]
@@ -162,7 +162,7 @@ end
 
 to capacity-corals-setup
 
-  create-capacity-corals number-corals [
+  create-capacity-corals num-start-corals [
     if arrangement = "random" [
       set xcor random-xcor set ycor random-ycor
     ]
@@ -191,7 +191,7 @@ end
 
 to algae-setup
 
-  create-algae start-algae [
+  create-algae 20 [
     set xcor random-xcor set ycor random-ycor
     set color green
     set shape "plant"
@@ -211,9 +211,9 @@ to go
 
   update-patches
 
-  let pH-value  random-float 0.05 + (average-pH - 0.02)
-  let temperature random-float 8 + (average-temperature - 4)
-  set coral-stress abs (pH-value - 8.1) * 40 + (temperature - 24.3)             ;scientific explanation needed
+  set pH-value  random-float 0.05 + (average-pH - 0.02)
+  set temperature random-float 8 + (average-temperature - 4)
+  set stress abs (pH-value - 8.1) * 40 + (temperature - 24.3)                   ;!scientific explanation needed
 
   if algae-competition [ algae-live ]                                           ;updates energy, distribution / hatches of algae
 
@@ -235,22 +235,27 @@ to update-patches
 
   ask patches [
     set radiation radiation-energy
-      set radiation precision ((-0.225 * abs depth) + radiation) 2              ;updates radiation depending on depth
-                                                                                ;  if radiation energy on max (9)
+    set radiation precision ((-0.125 * abs depth) + radiation) 2                ;!updates radiation depending on depth - new formular
+                                                                                ; if radiation energy is on max value (9)
     if radiation < 0 [                                                          ;    max energy gain is 9 (at depths close to 0m) min-value 4.5 (depth close to -20m)
       set radiation 0                                                           ;  when radiation on min (0)
-    ]                                                                           ;    all get 0 energy, but can't loose energy
+    ]                                                                           ;    all turtles get 0 energy, but can't loose energy
 
-    set helper-complexity helper-complexity + complexity-of-patch? (turtles-on neighbors)     ;add the complexity value of current patch to overall complexity
-  ]
+    let surrounding-corals                                                      ;creates an agentset with all corals surrounding the patch
+      (turtle-set (rapid-corals in-radius 1) (capacity-corals in-radius 1))     ;  algae don't count towards complexity
+    if count surrounding-corals  > 0 [
+      set patch-complexity complexity-of-patch? surrounding-corals depth        ;updates the patch complexity
+      set helper-complexity helper-complexity + patch-complexity                ;adds the patch-complexity to reef complexity
+    ]                                                                           ;complexity is dependend on number of different breeds, different sub-species in breeds (colors)
+  ]                                                                             ;  and the change of depth
 
-  set structural-complexity precision (helper-complexity / number-patches) 2    ;
+  set structural-complexity precision (helper-complexity / number-patches) 2    ;relativize complexity to the number of added complexity
 end
 
 
 to algae-live
 
-  if random 100 <= 33 [                                                          ;simulates algae getting continously into reef system from the outside
+  if random 100 <= 33 [                                                         ;simulates algae getting continously into reef system from the outside
     create-algae 1 [
       set xcor random-xcor set ycor random-ycor
       set color green
@@ -266,30 +271,30 @@ to algae-live
   set lifetime lifetime + 1
   if random 100 <= lifetime [die]
 
-  set energy (energy                                                            ;determine the energy gain/loss for this tick for each algae
+  set energy (energy                                                            ;determine the energy gain/loss this tick for each algae
     + [radiation] of patch-here * 0.1 * nutrients
-    - abs(average-temperature - 26.3)                                            ;research for optimal water-temp;
-    - abs (average-pH - 8.1) * 100)
+    - abs(average-temperature - 26.3)                                           ;!research for optimal water-temp and pH-value
+    - abs (average-pH - 8.1) * 40)                                              ;
+    - 2                                                                         ;A constant energy is needed for living
 
-  ask patch-here [set radiation (radiation - 5)]                              ;reduce radiation of patch algae is on, due to shadow of plant
+  if energy <= 0 [die]
 
-  if energy >= 50 [                                                             ;if algae has enough energy, a new algae is breeded
+  ask patch-here [set radiation (radiation - 5)]                                ;reduce radiation of patch algae is on, due to shadow of plant
+
+  if energy >= 50 [                                                             ;if alga has enough energy, a new alga is breeded to an adjacent patch
     set energy start-energy
     hatch 1 [
       set lifetime 0
       set energy start-energy
       left random 360
-      ifelse (
-          [count capacity-corals-here * 2 + count algae-here]
-          of patch-ahead 1 < max-corals + 2
+      ifelse (                                                                  ; if patch is full, no alga is breeded
+          [count capacity-corals-here  + count algae-here]                      ;   A patch is full when there are three agents of any type or
+          of patch-ahead 1 < max-corals + 1                                     ;
         )
         [forward 1]
         [die]
     ]
   ]
-
-  set energy (energy - 2)                                                       ;constant energy needed for living
-  if energy <= 0 [die]
 ]
 end
 
@@ -303,20 +308,20 @@ to corals-live
                                                                                 ;                        worst: + 0 energy
       + (0.05 * zooplankton-abundance - 2)                                      ; - from eating plankton, best: + 3 energy, worst: + 0.5 energy
                                                                                 ;A coral looses energy...
-      - coral-stress / stress-resilience                                        ; - from the stress it is exposed to, depending on pH and temperature
+      - stress / stress-resilience                                              ; - from the stress it is exposed to, depending on pH and temperature
       - living-energy                                                           ; - its actions needed for living: breathing, movement, digesting, etc.
       - 2)                                                                      ; - this loss is to relativize the gain of random 4 energy in line 251
 
     if energy <= 0 [die]
                                                                                 ;To reproduce, a coral...
-    if energy >= birth-energy [                                                 ; - needs species specific amount of energy to reproduce ;BAUSTELLE
+    if energy >= birth-energy  [                              ; - needs species specific amount of energy to reproduce ;BAUSTELLE
       set energy start-energy                                                   ; - looses all of its energy, except the energy it started with
       hatch 1 [                                                                 ; - breeds one coral to a random location around itself
         set energy start-energy
         left random 360
         ifelse (                                                                ;   if the space is full, no coral is breeded
             [count rapid-corals-here                                            ;   A space is full when there are three agents of any type or
-            + (2 * count capacity-corals-here) + count algae-here]              ;     one agent of the k-coral type plus one agent of any type
+            + (2 * count capacity-corals-here)]                                 ;     one agent of the k-coral type plus one agent of any type
             of patch-ahead 1 < max-corals
           )
           [forward 1]
@@ -340,32 +345,33 @@ end
 
 
 to-report coral-cover
-  report count patches with [any? turtles-here with                             ;count patches with turtles
-   [breed = rapid-corals or breed = capacity-corals]] / number-patches * 100    ;Properties of turtles to be counted:
+  report count patches with [any? turtles-here with                             ;determine percentage of patches with corals on them
+   [breed = rapid-corals or breed = capacity-corals]] / number-patches * 100
 end
 
 
-to-report complexity-of-patch? [turtle-agentset]                                ;Returns number of unique breeds in an agentset
+to-report complexity-of-patch? [turtle-agentset patch-depth]                    ;Returns number of unique breeds in an agentset
                                                                                 ;  parameter:
   let known-breeds []                                                           ;    coral-agentset - Agentset of turtles
   let known-colors []
- ; let depth-change 0
+  let depth-change 0
 
 
-  ask turtle-agentset [                                                         ;Look at the breed of every turtle in turtle-agentset
+  ask turtle-agentset [                                                         ;Look at the breed and color of every turtle in turtle-agentset
     if not (member? breed known-breeds) [                                       ;  if breed has not been seen before
       set known-breeds lput breed known-breeds                                  ;  remember its breed
     ]
-    if not (member? color known-colors) [                                       ;
-      set known-colors lput color known-colors                                  ;
+    if not (member? color known-colors) [                                       ;  if color has not been seen before
+      set known-colors lput color known-colors                                  ;  remember the color
     ]
 
-;   set depth-change depth-change + (abs patch-depth - depth)
-
+    set depth-change depth-change + (abs patch-depth - [depth] of patch-here)
+   ; show (abs patch-depth - [depth] of patch-here)
   ]
 
-  report (length known-breeds + (length known-colors) / 2)                        ;Return the number of breeds noted and half of
-                                                                                  ; number of colors, because breed is more weighty
+  report (length known-breeds
+    + (length known-colors) / 2 + depth-change / (count turtle-agentset * 4))   ;Return the number of breeds noted and half of
+                                                                                ; number of colors, because breed is more weighty
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -396,10 +402,10 @@ ticks
 30.0
 
 CHOOSER
-151
-11
-360
-56
+154
+19
+363
+64
 planted-species
 planted-species
 "select planted coral species" "r-strategist" "k-strategist" "both"
@@ -407,9 +413,9 @@ planted-species
 
 SWITCH
 1068
-87
+104
 1234
-120
+137
 algae-competition
 algae-competition
 0
@@ -417,10 +423,10 @@ algae-competition
 -1000
 
 BUTTON
-31
-95
-107
-132
+34
+103
+110
+140
 Setup
 setup
 NIL
@@ -434,50 +440,50 @@ NIL
 1
 
 CHOOSER
-369
-11
-583
-56
+372
+19
+586
+64
 arrangement
 arrangement
 "select arrangemet of corals" "clumped" "grid" "random"
-3
+1
 
 SLIDER
-1067
-201
-1236
-234
+411
+267
+589
+300
 nutrients
 nutrients
 0
 50
-47.0
+30.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-203
-178
-395
-211
+195
+188
+387
+221
 average-temperature
 average-temperature
 22
 28
-25.3
+24.3
 0.1
 1
 °C
 HORIZONTAL
 
 BUTTON
-28
-278
-104
-311
+31
+286
+107
+319
 Go
 go
 T
@@ -491,10 +497,10 @@ NIL
 1
 
 SLIDER
-383
-68
-585
-101
+386
+76
+588
+109
 density
 density
 1
@@ -506,10 +512,10 @@ density
 HORIZONTAL
 
 PLOT
-25
-378
-282
-560
+28
+386
+285
+568
 Number of Individuals
 NIL
 NIL
@@ -526,25 +532,25 @@ PENS
 "algae" 1.0 0 -13210332 true "" "plot count algae"
 
 SLIDER
-418
-179
-596
-212
+410
+189
+588
+222
 zooplankton-abundance
 zooplankton-abundance
 50
 100
-65.0
+64.0
 1
 1
 NIL
 HORIZONTAL
 
 BUTTON
-28
-237
-105
-270
+31
+245
+108
+278
 go-once
 go\n
 NIL
@@ -558,15 +564,15 @@ NIL
 1
 
 SLIDER
-418
-219
-596
-252
+410
+229
+588
+262
 radiation-energy
 radiation-energy
 0
 9
-5.0
+6.0
 1
 1
 NIL
@@ -583,26 +589,11 @@ display_lables?
 1
 -1000
 
-SLIDER
-1068
-145
-1233
-178
-start-algae
-start-algae
-0
-100
-20.0
-1
-1
-NIL
-HORIZONTAL
-
 MONITOR
-302
-379
-413
-424
+305
+387
+417
+432
 coral-cover %
 coral-cover
 2
@@ -610,10 +601,10 @@ coral-cover
 11
 
 MONITOR
-302
-434
-431
-479
+305
+442
+418
+487
 structural-complexity
 structural-complexity
 17
@@ -621,65 +612,55 @@ structural-complexity
 11
 
 SLIDER
-203
-218
-397
-251
+193
+228
+387
+261
 average-pH
 average-pH
 7.8
 8.2
-7.85
+7.9
 0.05
 1
 pH
 HORIZONTAL
 
 CHOOSER
-165
-68
-271
-113
+254
+73
+360
+118
 depth-profile
 depth-profile
 "Profile 1" "Profile 2" "Profile 3"
 0
 
-CHOOSER
-279
-68
-374
-113
-user
-user
-"Marvin" "Leo"
-1
-
 TEXTBOX
-11
-10
-149
-41
+14
+18
+152
+49
 1. Choose Plantment & density
 13
 0.0
 1
 
 TEXTBOX
-10
-66
-160
-84
+13
+74
+163
+92
 2. Choose ground profile
 13
 0.0
 1
 
 TEXTBOX
-11
-176
-197
-227
+14
+187
+200
+238
 3. While running, try changing different parameters
 13
 0.0
