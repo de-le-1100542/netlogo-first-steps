@@ -423,10 +423,10 @@ algae-competition
 -1000
 
 BUTTON
-34
-103
-110
-140
+35
+114
+111
+151
 Setup
 setup
 NIL
@@ -458,7 +458,7 @@ nutrients
 nutrients
 0
 50
-30.0
+10.0
 1
 1
 NIL
@@ -497,10 +497,10 @@ NIL
 1
 
 SLIDER
-386
-76
+373
+75
 588
-109
+108
 density
 density
 1
@@ -572,7 +572,7 @@ radiation-energy
 radiation-energy
 0
 9
-6.0
+4.0
 1
 1
 NIL
@@ -620,21 +620,21 @@ average-pH
 average-pH
 7.8
 8.2
-7.9
+8.1
 0.05
 1
 pH
 HORIZONTAL
 
 CHOOSER
-254
-73
-360
-118
+195
+83
+301
+128
 depth-profile
 depth-profile
 "Profile 1" "Profile 2" "Profile 3"
-0
+1
 
 TEXTBOX
 14
@@ -647,10 +647,10 @@ TEXTBOX
 1
 
 TEXTBOX
-13
-74
-163
-92
+14
+85
+164
+103
 2. Choose ground profile
 13
 0.0
