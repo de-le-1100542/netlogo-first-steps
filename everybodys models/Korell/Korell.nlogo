@@ -409,7 +409,7 @@ CHOOSER
 planted-species
 planted-species
 "select planted coral species" "r-strategist" "k-strategist" "both"
-3
+0
 
 SWITCH
 1068
@@ -447,7 +447,7 @@ CHOOSER
 arrangement
 arrangement
 "select arrangemet of corals" "clumped" "grid" "random"
-1
+0
 
 SLIDER
 411
@@ -634,7 +634,7 @@ CHOOSER
 depth-profile
 depth-profile
 "Profile 1" "Profile 2" "Profile 3"
-1
+0
 
 TEXTBOX
 14
