@@ -210,8 +210,8 @@ to reproduce-Calluna
 end
 
 to Calluna-death                                                                                                 ; the Calluna plants die...
-  if energy < 0 [ die ]                                                                                            ; ... if they run out of energy...
-  if age > 25 [ die ]                                                                                              ; ... or if they are more than 25 years old
+  if energy < 0 [ die ]                                                                                          ; ... if they run out of energy...
+  if age > 25 [ die ]                                                                                            ; ... or if they are more than 25 years old
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
