@@ -171,22 +171,22 @@ to setup-weather-scenario
    if weather-scenario = "wet-and-cold"                                     ;;; a wet-and-cold reproduction period equals a ...
    [
     ask water-patches  [ set level-change level-change * 1 ]                ;;; if the weather is wet and cold, the water level changes less than in standard conditions
-    ask plants [ set hatching-number hatching-number * 2]
+    set hatching-number hatching-number * 2
    ]
 
    if weather-scenario = "wet-and-warm"                                     ;;; TO DO: a wet-and-warm reproduction period equals ...
    [
-    ask water-patches [ set level-change level-change * 2 ]
-    ask plants [ set hatching-number hatching-number * 2]
+    set level-change level-change * 2
+     set hatching-number hatching-number * 2
    ]              ; if the weather is wet and warm, the water level changes at a standard rate
 
 
    if weather-scenario = "dry-and-cold"                                     ;;; TO DO: a dry-and-cold reproduction period equals a ...
-   [ ask water-patches  [ set level-change level-change * 1.5 ] ]           ;;;  ...
+     [ set level-change level-change * 1.5 ]          ;;;  ...
 
 
    if weather-scenario = "dry-and-warm"                                     ;;; TO DO: a dry-and-cold reproduction period equals a ...
-   [ ask water-patches  [ set level-change level-change * 4 ] ]             ;;; ...
+    [ set level-change level-change * 4 ]             ;;; ...
 end
 
 
@@ -265,8 +265,9 @@ to go
   ask plants
   [
     set energy energy - 1
-    grow-plants
+
   ]
+   grow-plants
     ; new plants grow as the time goes by
   death                                                    ; toads, female-toads and plants die
   update-water-body                                        ; connects the water-level with prec/temp
@@ -333,6 +334,9 @@ end
 ; For 3-5 ticks male and female toads have same coordinates and stop moving.
 
 to move-until
+  let target  one-of my-links
+  face target
+  while [ not any? turtles-here with [ who = target ]] [ fd speed * 2]
  ; if any? link-neighbors
  ; [ ; let target one-of link-neighbors
  ;  let current-location patch-here
@@ -372,11 +376,25 @@ end
 ;growth-of-vegetation
 ;;-----------------------
 
+
+; observer context von go
+to grow-plants
+create-plants random ( count soil-patches with [not any? plants-here]) * count plants / 100 [
+      setxy random-xcor min-pycor + random ( abs( soil-top + 3 - min-pycor ) )
+      set shape "plant"
+      set color green
+      set size 3
+      set energy 915                                    ; 915 energy equals a life-span of 5 years
+    ]
+end
+
 ; Creates plants and algae (here on after refered to as plants) that only grow in the pond.
 ; In this project, at the beginning there are 0 plants as the pond is newly created.
-to grow-plants
+to grow-plants-old
   if ( ticks mod 10 = 0 )                                ; every 10 ticks
   [
+
+    if random ( count soil-patches with [not any? plants-here] ) > 5 [
     hatch 1                                              ; every new plant reproduces exponentially/ random hatching number
     [
       setxy random-xcor min-pycor + random ( abs( soil-top + 3 - min-pycor ) )
@@ -385,7 +403,7 @@ to grow-plants
       set size 3
       set energy 915                                    ; 915 energy equals a life-span of 5 years
     ]
-  ]
+  ]]
 end
 
 
@@ -640,7 +658,7 @@ CHOOSER
 weather-scenario
 weather-scenario
 "wet-and-cold" "wet-and-warm" "dry-and-cold" "dry-and-warm"
-0
+1
 
 SLIDER
 263
